@@ -16,7 +16,7 @@ struct ContentView: View {
     @State private var turnTotal = 1
     @State private var gameOver = false
     
-    @State private var flagNations = ["Estonia", "France", "Germany", "Ireland", "Italy", "Monaco", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"].shuffled()
+    @State private var flagNations = ["Algeria", "Bangladesh", "Brazil", "China", "Cuba", "Eritrea", "Guinea-Bissau", "Guyana", "India", "Indonesia", "Laos", "Mexico", "Nicaragua", "Nigeria", "Pakistan", "Portugal", "Russia", "Sri Lanka", "Tanzania", "Vietnam"].shuffled()
     @State private var animationAmount = [0.0, 0.0, 0.0]
     
     var body: some View {
@@ -43,8 +43,11 @@ struct ContentView: View {
                             performButtonAction(number)
                         } label: {
                             Image(flagNations[number])
-                                .renderingMode(.original)
-                                .clipShape(Capsule())
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 325, height: 175)
+                                .clipShape(Rectangle())
+
                                 .shadow(radius: 5)
                                 .rotation3DEffect(.degrees(animationAmount[number]), axis: (x: 0, y: 1, z: 0))
                                 .opacity(scoreShow && number != tappedButton ? 0.25 : 1)
@@ -88,7 +91,7 @@ struct ContentView: View {
     }
     func mainGameLoop() {
         animationAmount = [0.0, 0.0, 0.0]
-        if turnTotal < 8 {
+        if turnTotal < 10 {
             flagNations.shuffle()
             correctAnswer = Int.random(in: 0...2)
             turnTotal += 1
