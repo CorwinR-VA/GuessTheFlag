@@ -8,14 +8,16 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var answer = Int.random(in: 0...2)
+    @State private var correctAnswer = Int.random(in: 0...2)
+    @State private var tappedButton = 0
     @State private var scoreShow = false
     @State private var scoreType = ""
-    @State private var score = 0
-    @State private var turn = 1
-    @State private var end = false
+    @State private var scoreTotal = 0
+    @State private var turnTotal = 1
+    @State private var gameOver = false
     
-    @State private var flags = ["Estonia", "France", "Germany", "Ireland", "Italy", "Monaco", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"].shuffled()
+    @State private var flagNations = ["Estonia", "France", "Germany", "Ireland", "Italy", "Monaco", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"].shuffled()
+    @State private var animationAmount = [0.0, 0.0, 0.0]
     
     var body: some View {
         ZStack {
@@ -33,17 +35,19 @@ struct ContentView: View {
                         Text("Tap the flag of")
                             .foregroundStyle(.secondary)
                             .font(.subheadline.weight(.heavy))
-                        Text(flags[answer])
+                        Text(flagNations[correctAnswer])
                             .font(.largeTitle.weight(.semibold))
                     }
                     ForEach(0..<3) { number in
                         Button {
-                            button(number)
+                            performButtonAction(number)
                         } label: {
-                            Image(flags[number])
+                            Image(flagNations[number])
                                 .renderingMode(.original)
                                 .clipShape(Capsule())
                                 .shadow(radius: 5)
+                                .rotation3DEffect(.degrees(animationAmount[number]), axis: (x: 0, y: 1, z: 0))
+                                .opacity(scoreShow && number != tappedButton ? 0.25 : 1)
                         }
                     }
                 }
@@ -53,7 +57,7 @@ struct ContentView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 Spacer()
                 Spacer()
-                Text("Score: \(score)")
+                Text("Score: \(scoreTotal)")
                     .foregroundColor(.white)
                     .font(.title.bold())
                 Spacer()
@@ -61,36 +65,41 @@ struct ContentView: View {
             .padding()
         }
         .alert(scoreType, isPresented: $scoreShow) {
-            Button("Continue", action: main)
+            Button("Continue", action: mainGameLoop)
         } message: {
-            Text("Your score is \(score)")
+            Text("Your score is \(scoreTotal)")
         }
-        .alert("Game Over", isPresented: $end) {
-            Button("Play Again", action: restart)
+        .alert("Game Over", isPresented: $gameOver) {
+            Button("Play Again", action: restartFromZero)
         } message: {
-            Text("Your score is \(score)")
+            Text("Your score is \(scoreTotal)")
         }
     }
-    func button(_ number: Int) {
-        if number == answer {
+    func performButtonAction(_ number: Int) {
+        withAnimation {
+            tappedButton = number
+            animationAmount[number] += 360.0
+        }
+        if number == correctAnswer {
             scoreType = "Correct"
-            score += 1
-        } else { scoreType = "That is the flag of \(flags[number])"}
+            scoreTotal += 1
+        } else { scoreType = "That is the flag of \(flagNations[number])"}
         scoreShow = true
     }
-    func main() {
-        if turn < 8 {
-            flags.shuffle()
-            answer = Int.random(in: 0...2)
-            turn += 1
+    func mainGameLoop() {
+        animationAmount = [0.0, 0.0, 0.0]
+        if turnTotal < 8 {
+            flagNations.shuffle()
+            correctAnswer = Int.random(in: 0...2)
+            turnTotal += 1
         } else {
-            end = true
+            gameOver = true
         }
     }
-    func restart() {
-        turn = 0
-        score = 0
-        main()
+    func restartFromZero() {
+        turnTotal = 0
+        scoreTotal = 0
+        mainGameLoop()
     }
 }
 
